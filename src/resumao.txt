@@ -1,0 +1,57 @@
+1. Bibliotecas
+mne: Utilizada para processar os dados de EEG (eletroencefalograma), que é o principal tipo de dado analisado.
+numpy: Manipulação numérica e cálculos.
+scipy.signal.welch: Cálculo da Densidade Espectral de Potência (PSD), uma medida que indica quanta potência está presente em diferentes frequências do sinal.
+sklearn: Ferramentas de aprendizado de máquina, como imputação de dados, normalização, divisão de dados, classificação e seleção de características.
+matplotlib: Geração de gráficos e visualizações dos dados e resultados.
+
+
+2. Estrutura dos Dados EEG
+O código define uma estrutura chamada info usando o mne.create_info, que especifica os canais e suas características (ex.: 8 canais de EEG, com nomes de eletrodos específicos e uma taxa de amostragem de 250 Hz).
+Carrega dois tipos de dados:
+Dados do Teste: Dados EEG que contêm amostras de um teste, onde se busca identificar estados de "foco".
+Dados Basais: Amostras de EEG em estado de repouso, usadas para estimar o ruído de fundo.
+
+
+3. Processamento dos Dados
+Filtros Notch e Passa-Banda: O filtro notch remove interferências de 60 Hz (geralmente ruído de corrente elétrica). O filtro passa-banda (4-100 Hz) remove componentes de baixíssima e altíssima frequência, focando nas faixas relevantes de EEG.
+Transformada de Fourier (Método de Welch): Converte os sinais de EEG do domínio do tempo para o domínio da frequência. Isso permite analisar a potência em diferentes faixas de frequência.
+
+
+4. Bandas de Frequência
+As faixas de interesse são:
+Theta (4-8 Hz)
+Alpha (8-13 Hz)
+Beta (13-30 Hz)
+Gamma (30-100 Hz)
+
+O código divide os dados de EEG em janelas de 5 segundos e calcula a potência média em cada uma dessas bandas.
+Se as bandas Beta ou Gamma dominarem, o segmento é classificado como "foco" (f). Caso contrário, como "não foco" (nf).
+
+
+5. Estimativa de Ruído de Fundo
+O ruído de fundo é calculado usando os dados basais, que são coletados em um momento de repouso. A potência média dessas amostras é usada para subtrair o ruído das amostras de foco e não foco, estimando a relação sinal-ruído (SNR).
+Dois tipos de SNR são calculados:
+Narrow Band SNR: Considera a relação sinal-ruído em faixas específicas.
+Wide Band SNR: Considera a relação sinal-ruído em toda a faixa de frequências.
+
+
+6. Treinamento do Modelo SVM
+As amostras de "foco" e "não foco" são rotuladas com 1 e 0, respectivamente.
+Os dados são divididos em treino (70%) e teste (30%).
+Um classificador SVM com kernel linear é treinado para classificar as amostras com base nas características extraídas das bandas de frequência.
+RFE (Recursive Feature Elimination) é usado para selecionar as características mais importantes (neste caso, 32) e melhorar o desempenho do modelo.
+O desempenho do SVM é avaliado usando métricas como acurácia e o relatório de classificação (precision, recall, F1-score).
+
+
+7. Visualização
+Um gráfico de barras mostra a distribuição das amostras nas diferentes bandas de frequência (Theta, Alpha, Beta, Gamma).
+O código também exibe os resultados de classificação, incluindo quantas amostras foram classificadas como "foco" e "não foco".
+Resumo
+Este código realiza o seguinte:
+
+Carrega e processa dados EEG, aplicando filtros para remover ruído e extrair frequências relevantes.
+Divide os dados em bandas de frequência e identifica quais amostras estão associadas a um estado de foco com base nas bandas Beta e Gamma.
+Treina um classificador SVM para distinguir entre estados de foco e não foco, utilizando seleção de características para melhorar a acurácia.
+Calcula a relação sinal-ruído e utiliza os dados basais para estimar o ruído de fundo e ajustar as potências observadas.
+Visualiza os resultados em gráficos, facilitando a análise e interpretação dos dados.
